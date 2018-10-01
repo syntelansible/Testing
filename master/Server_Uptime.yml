@@ -1,0 +1,5 @@
+  - name: Check since which the server is operational
+    shell: /usr/bin/uptime | grep -ohe 'up .*' | sed 's/up //g' | awk -F "\"*,\"*" '{print $1, $2}' 
+    changed_when: False
+    register: uptime  
+    
