@@ -1,4 +1,1 @@
-- hosts: localhost
-  tasks:
-  - name: Hello World!
-    shell: sudo echo "Hi! Tower is working."
+  ansible_connection: local
