@@ -1,4 +1,4 @@
 - hosts: localhost
   tasks:
   - name: Hello World!
-    shell: echo "Hi! Tower is working."
+    shell: sudo echo "Hi! Tower is working."
