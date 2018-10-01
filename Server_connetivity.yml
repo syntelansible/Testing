@@ -1,0 +1,6 @@
+  - name: To test server connection
+    action: ping
+    register: server_connect
+    
+  - debug :  
+      msg : "{{ server_connect }}"
