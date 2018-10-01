@@ -3,4 +3,4 @@
     register: server_connect
     
   - debug :  
-      msg : "{{server_connect}}"
+      msg : "{{ server_connect }}"
