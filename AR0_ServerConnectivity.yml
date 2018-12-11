@@ -1,0 +1,13 @@
+# Play to check the server connectivity.  
+  
+  - name: UC001.MAIN.SERVERCON - ping the server to check status
+    action: ping
+    register: server_connect
+
+# Set fact variable check the connection is successful.  
+  - set_fact: ACTION_STATUS="{{ACTION_STATUS}} [Connection Successful] "  
+    when: server_connect.ping == "pong"
+
+# Set fact variable check the connection is unsuccessful. 
+  - set_fact: ACTION_STATUS="{{ACTION_STATUS}} [Connection Unsuccessful] "  
+    when: server_connect.ping != "pong"

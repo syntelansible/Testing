@@ -1,0 +1,32 @@
+# UC001 - Include AR0_DBConnect to get the file system and usage details
+
+  - include_tasks: AR0_DBConnect.yml V_Query={{OUT_BASE_UC001}}
+
+# UC001 - Set fact varibale to stoore the query output from register variable
+
+  - set_fact: IN_BASE_UC004="{{ Out_DB_Parm.stdout.split('\t') }}"
+  
+# UC001 - Setting fact varibales to store FILE_LOCATION,FILE_PATTERN,MAX_FILESYS_UTILIZATION,OPT_FILESYS_UTILIZATION,COMPRESS_REQ,MIN_AGE_DELETE,MIN_AGE_COMPRESS,OPTIMAL_CPU_USAGE,MAXIMUM_CPU_USAGE,OPTIMAL_MEMORY_USAGE,MAXIMUM_MEMORY_USAGE,DL_NOTIFICATION from LOB base table.
+  - set_fact: SERVER_NAME="{{IN_BASE_UC004[0]}}"
+  - set_fact: SERVER_OS_TYPE="{{IN_BASE_UC004[1]}}"
+  - set_fact: SERVER_IP="{{IN_BASE_UC004[2]}}"
+  - set_fact: LOB="{{IN_BASE_UC004[3]}}"
+  - set_fact: WORKGROUP="{{IN_BASE_UC004[4]}}"
+  - set_fact: APPLICATIONS_HOSTED="{{IN_BASE_UC004[5]}}"
+  - set_fact: FILE_LOCATION="{{IN_BASE_UC004[6]}}"
+  - set_fact: FILE_PATTERN="{{IN_BASE_UC004[7]}}"
+  - set_fact: MAX_FILESYS_UTILIZATION="{{IN_BASE_UC004[8]}}"
+  - set_fact: OPT_FILESYS_UTILIZATION="{{IN_BASE_UC004[9]}}"
+  - set_fact: COMPRESS_REQ="{{IN_BASE_UC004[10]}}"
+  - set_fact: MIN_AGE_DELETE="{{IN_BASE_UC004[11]}}"
+  - set_fact: MIN_AGE_COMPRESS="{{IN_BASE_UC004[12]}}"
+  - set_fact: OPTIMAL_CPU_USAGE="{{IN_BASE_UC004[13]}}"
+  - set_fact: MAXIMUM_CPU_USAGE="{{IN_BASE_UC004[14]}}"
+  - set_fact: VALIDATION_TS="{{ ansible_date_time.date }} {{ ansible_date_time.time}}"
+  - set_fact: LASTUPDATED="{{ ansible_date_time.date }} {{ ansible_date_time.time}}"
+  - set_fact: OPTIMAL_MEMORY_USAGE="{{IN_BASE_UC004[15]}}"
+  - set_fact: LASTUPDATED_BY="{{ansible_env.LOGNAME}}"
+  - set_fact: MAXIMUM_MEMORY_USAGE="{{IN_BASE_UC004[16]}}"
+  - set_fact: DL_NOTIFICATION="{{IN_BASE_UC004[17]}}"
+
+

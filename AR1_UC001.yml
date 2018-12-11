@@ -1,0 +1,22 @@
+#Usecase Name - UC001 Server file system cleanup - Requirement for Auto Remediation AR.FILESYS.UC001
+
+# UC001 - Host Declaration
+- hosts: localhost
+
+# UC001 - Include variable files into the core playbook.
+  vars_files:
+    - AR1_UC001_Vars.yml
+    - AR0_DB_Variables.yml
+
+  tasks: 
+
+# UC001 - Include Task to connect with the server and authentication factors
+  - include_tasks: AR0_ServerConnectivity.yml
+  
+# UC001 - Task to get the required variables from the LOB database table
+  - include_tasks: AR2_UC001_BaseDataFetch.yml
+    
+# UC001 - Include Task to call the decision engine to perform compress/delete
+  - include_tasks: AR1_UC001_DecisionEngine.yml
+
+

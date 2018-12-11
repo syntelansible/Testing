@@ -1,0 +1,8 @@
+# UC001 - Task to Identify the files which is greater than thershold limit.
+  - debug:
+      msg: "{{item.0}}"
+    with_together:
+      - "{{ V_FS_LIST }}"
+      - "{{ V_FS_UTIL }}"
+    register: FS_OUT
+    when: item.1 >= UTIL_THRESHOLD

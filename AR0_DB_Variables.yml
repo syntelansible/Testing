@@ -1,0 +1,7 @@
+#UC001 - Global Variables to be used in all playbooks.
+
+    CURR_USER: "{{CURRENT_USER.stdout_lines | to_yaml | trim |replace('[','') | replace(']','')}}"
+    DB_USER: "root"
+    DB_NAME: "ansiblesql"
+    DB_PWD: ""
+    CURR_TIMESTAMP: "{{ lookup('pipe','date +%Y-%m-%d-%H-%M-%S') }}"

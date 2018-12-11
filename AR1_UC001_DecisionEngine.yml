@@ -1,0 +1,44 @@
+# UC001 - Include shell Executor to get the file location details.
+
+  - include_tasks: AR1_UC001_ShellExecutorWithItems.yml In_Command_Parm={{ FILE_LOCATION.split(',')}}
+  
+# UC001 - Set fact varibles to store the file system and utilization.
+  
+  - set_fact: FS_LIST={{ Out_Command_Parm.results | map(attribute='_ansible_item_label') | list }}
+  - set_fact: FS_UTIL_BEFORE={{ Out_Command_Parm.results | map(attribute='stdout') | list  }}
+  
+# UC001 - Include AR1_UC001_FSVariation to get file system list,util before perform any actions and max usage limit.
+
+  - include_tasks: AR1_UC001_FSOverThreshold.yml V_FS_LIST={{FS_LIST}} V_FS_UTIL={{FS_UTIL_BEFORE}}  UTIL_THRESHOLD={{MAX_FILESYS_UTILIZATION}}
+
+# UC001 - Set fact varibles to store the file details which are having max utilization.
+
+  - set_fact: FSLIST_GT_MAXTH={{ FS_OUT.results | selectattr('msg','defined') |map(attribute='msg') | list }}
+  
+# UC001 - Set fact varibles to store the file system details and before utilization.  
+
+  - set_fact:
+      test: "{{ test | default([]) | union([{'FSNAME' : item.0 , 'Usage' :  item.1  }])}}"
+     
+    with_together:
+      - "{{FS_LIST}}"
+      - "{{ FS_UTIL_BEFORE }}"
+
+
+# UC001 - Include shell Executor to get the max threshlod value.
+
+  - include_tasks: AR1_UC001_ShellExecutorWithItems.yml In_Command_Parm={{ FSLIST_GT_MAXTH }}    
+  - set_fact: SERVER_STATS="{{SERVER_STATS}} File System Utilization before in {{item.0 |to_nice_yaml| replace('\n', '') }}  is  {{ item.1 | int|abs }} " 
+    with_together:
+      - "{{ FSLIST_GT_MAXTH }}"
+      - "{{ Out_Command_Parm.results[0].stdout }}"
+    when: item.1 > MAX_FILESYS_UTILIZATION
+
+# UC001 - Include AR3_UC001_FileDelete to delete the files.
+  - include_tasks: AR3_UC001_FileDelete.yml
+    when: FSLIST_GT_MAXTH != ''
+
+# UC001 - Include R5_UC001_UserNotification to generate the HTML report with returm code success.
+  - include_tasks: R5_UC001_UserNotification.yml SUB="{{ SUCCESS002 }}", HEAD_COLOR="#008000" 
+    when: FSLIST_GT_MAXTH == '' 
+

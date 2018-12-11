@@ -1,0 +1,21 @@
+#UC001 - Playbook specific Variables to be used in UC001.
+   ACTION_STATUS: ""
+   SOP_ID: "1"
+   SOP_NAME: "File System clean up"
+   SERVER_STATS: ""
+   SUCCESS001: "File system cleanup completed successful, application performance restored"
+   SUCCESS002: "Application performance restored without intervention" 
+   ERRCON: "Unable to connect to server"
+   ERRDEL: "Error encountered while deleting files on server"
+   ERRCOMP: "Error compressing files on server"
+   ERR001: "Unable to reduce file system utilization below optimum threshold"
+   ERRDIS: "Unable to disconnect from server” message to end user"      
+   OUT_BASE_UC001: "select SERVER_NAME,SERVER_OS_TYPE,SERVER_IP,LOB,WORKGROUP,APPLICATIONS_HOSTED, FILE_LOCATION,FILE_PATTERN,MAX_FILESYS_UTILIZATION,OPT_FILESYS_UTILIZATION,COMPRESS_REQ,MIN_AGE_DELETE,MIN_AGE_COMPRESS,OPTIMAL_CPU_USAGE,MAXIMUM_CPU_USAGE,OPTIMAL_MEMORY_USAGE,MAXIMUM_MEMORY_USAGE,DL_NOTIFICATION from ANSIBLE_INFRA_LOBDATA where SERVER_NAME='{{HOST_NAME}}';"
+   MAX_EXEC: "select max(EXEC_ID) from ANSIBLE_INFRA_AUDIT where SERVER_NAME='{{HOST_NAME}}';"
+   UPSERT_UC001: "INSERT INTO ANSIBLE_INFRA_AUDIT (SERVER_NAME,SERVER_OS_TYPE,SERVER_IP,LOB,WORKGROUP,APPLICATIONS_HOSTED,SOP_ID,SOP_NAME,ACTION_PERFORMED,SERVER_STATS,LASTUPDATED,LASTUPDATED_BY,DL_NOTIFICATION) VALUES('{{SERVER_NAME}}','{{SERVER_OS_TYPE}}','{{SERVER_IP}}','{{LOB}}','{{WORKGROUP}}','{{APPLICATIONS_HOSTED}}',{{SOP_ID}},'{{SOP_NAME}}','{{ACTION_STATUS}}','{{SERVER_STATS}}','{{LASTUPDATED}}','{{LASTUPDATED_BY}}','{{DL_NOTIFICATION}}');"
+   OUT_AUDIT_UC001: "select ACTION_PERFORMED from ANSIBLE_INFRA_AUDIT where SERVER_NAME='{{HOST_NAME}}' and EXEC_ID='{{MAX_EXEC_ID}}'"
+   OUT_AUDIT_UC002: "select SERVER_STATS from ANSIBLE_INFRA_AUDIT where SERVER_NAME='{{HOST_NAME}}' and EXEC_ID='{{MAX_EXEC_ID}}'"
+   FS_USAGE: "df -k {{ item }} | tail -n 1 | awk {'print $5 '}  | sed 's/%//g'"
+   
+   
+

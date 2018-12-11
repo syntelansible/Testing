@@ -1,0 +1,82 @@
+# UC001 - Task to send the notification email to end users
+
+# Host - The mail server. 
+# Port - The mail server port. This must be a valid integer between 1 and 65534 
+# Secure - If always, the connection will only send email if the connection is Encrypted. If the server doesn't accept the encrypted connection it will fail. If try, the connection will attempt to setup a secure SSL/TLS session, before trying to send. If never, the connection will not attempt to setup a secure SSL/TLS session, before sending If starttls, the connection will try to upgrade to a secure SSL/TLS connection, before sending. If it is unable to do so it will fail. 
+
+# From - The email-address the mail is sent from. May contain address and phrase. 
+# Username - If SMTP requires username.  
+# Password - If SMTP requires password. 
+
+# To - The email-address(es) the mail is being sent to. This is a list, which may contain address and phrase portions. 
+# CC - The email-address(es) the mail is being copied to. This is a list, which may contain address and phrase portions. 
+# BCC - The email-address(es) the mail is being 'blind' copied to. This is a list, which may contain address and phrase portions. 
+
+# Subject - The subject of the email being sent. 
+# Attach - A list of pathnames of files to attach to the message. Attached files will have their content-type set to application/octet-stream. 
+# Headers - A list of headers which should be added to the message. Each individual header is specified as header=value (see example below). 
+# Body - The body of the email being sent. 
+
+#UC001 - Include task to get util stats from audit table.
+  
+  - include_tasks: AR5_UC001_UtilStats.yml
+
+#UC001.USERNOTIFICATION - Task for generating the HTML Report in local directory.
+
+  - name: Generate the HTML report
+    blockinfile:
+      path: /home/syntel/Documents/UC001/AR7_UC001_File systemUtilizationReport.html
+      marker: ""
+      content: |
+        <html>
+        <head>
+        <style type="text/css"> body,div,table,thead,tbody,tfoot,tr,th,td,p { font-family:"Tahoma"; font-size:10pt } a.comment-indicator:hover + comment { background:#ffd; position:absolute; display:block; border:1px solid black; padding:0.5em;  } a.comment-indicator { background:red; display:inline-block; border:0.5px solid "#dfdfdf"; width:0.5em; height:0.5em;  } comment { display:none;  } 
+        </style>
+        </head>
+
+        <body>
+        <table cellspacing="0" border="1"align="center">
+        <colgroup span="2" width="377"></colgroup>
+        <tr>
+        <td colspan=2 height="17" align="center" valign=middle bgcolor="#dfdfdf"><b><font color="Black">Ansible Auto Remediation  -File system Usage Optimization Notification [AR_FILESYS_UC001]</font></b></td>
+        </tr> <tr>
+        <td colspan=2 height="17" align="center" valign=middle bgcolor={{ HEAD_COLOR }}><b><font color=white>{{ SUB }} </font></b></td>
+        </tr>
+        <tr>
+        <td height="17" align="left" valign=middle><b>Server Optimized</b> <br> Name of Server the event is processed</td>
+        <td align="left" valign=middle>{{ inventory_hostname_short }}</td>
+        </tr> <tr>
+        <td height="17" align="left" valign=middle><b>Internet Protocol address (IP address)</b><br> Host or network interface identification and location addressing. </td>
+        <td align="left" valign=middle>{{ ansible_default_ipv4.address }}</td>
+        </tr>
+        <tr>
+        <td height="17" align="left" valign=middle><b>Operational System Installed </b>  </td>
+        <td align="left" valign=middle>{{ ansible_lsb.description }}</td>
+        </tr>  <tr>
+        <td height="47" align="left" valign=middle><b>Server Details with type (Web/App/Citrix/NDM)</b><br>Type of the server(s) the event occurred.</td>
+        <td align="left" valign=middle>{{ansible_system}}</td></tr> <tr>
+        <td height="47" align="left" valign=middle><b>Date of Event/Alert/Situation</b><br>The date time of the event captured by monitoring tool(s).</td>
+        <td align="left" valign=middle>{{ ansible_date_time.date }} {{ ansible_date_time.time}}</td></tr>
+        <tr>
+        <td height="47" align="left" valign=middle><b>High Level Problem Description</b><br>Description of the problem that may cause service disruption.</td>
+        <td align="left" valign=middle>To optimize of file system utilization on server - {{ inventory_hostname_short }}. Space utilization should be reduced below user-defined optimum threshold.</td></tr>
+        <tr>
+        <td height="77" align="left" valign=middle><b>Monitoring Tool(s)</b><br>Details from the monitoring tool(s) that remediated  the event.<br>Lists all tools event used to correlate.</td>
+        <td align="left" valign=middle> Red Hat Ansible 2.5.4 + / MooG / Dynatrace</td>
+        </tr>
+        <tr>
+        <td height="17" align="left" valign=middle><b>User Details</b><br> Current user logged in to execute this remediation.</td>
+        <td align="left" valign=middle>{{LASTUPDATED_BY}}</td></tr>
+        <tr>
+        <td colspan=2 height="57" align="left" bgcolor="#dfdfdf" valign=middle><b>Action Status :</b> <br><br>Following optimization has been performed on the Server {{ inventory_hostname_short }} where the file system usage was greater than user-defined maximum threshold. <br><br><b>{{UTIL_STAT1}}</b><br><br><b> List of files Compressed </b><br>{{Compress_List}}<br><br><b> List of files Deleted </b><br>{{Delete_List}}<br> <br> {{UTIL_STAT2}}%.<br><br>
+        </td>
+        </tr>
+        <tr>
+        <td colspan=2 height="77" align="left" valign=middle>If you have any questions or comments, please send mail to <b>{{ DL_NOTIFICATION }} </b></td>
+        </tr>
+        <tr>
+        <td colspan=2 height="17" align="center" align="center" valign="middle">******This is an auto-generated e-mail. Please do not reply to this message******</td>
+        </tr>
+        </table>
+        </html>
+

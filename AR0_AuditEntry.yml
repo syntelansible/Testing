@@ -1,0 +1,5 @@
+#UC001 - Play to update the varibles in audit table. 
+ - include_tasks: AR0_DBConnect.yml V_Query={{UPSERT_UC001}}
+ 
+#UC001 - set fact varibles to store the output data for reporting.
+ - set_fact: UTIL_STATS="{{Out_DB_Parm.stdout}}"

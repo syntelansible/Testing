@@ -1,0 +1,8 @@
+# Task to execute the shell commands to get file system usage and store in register variables
+
+  - name: Execute the Shell commands to get the infra details
+    shell: "{{FS_USAGE}}"
+    register: Out_Command_Parm
+    with_items:
+      - "{{In_Command_Parm}}"
+

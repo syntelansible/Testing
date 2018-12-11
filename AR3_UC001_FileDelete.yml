@@ -1,0 +1,71 @@
+#UC001 - Task to identify files which needs to be delete
+  
+  - include_tasks: AR0_FetchFileList.yml AGE={{MIN_AGE_DELETE}} V_FSLIST={{FSLIST_GT_MAXTH}} V_PATTERN={{FILE_PATTERN.split(',')}}
+ 
+
+# UC001 - set fact variables to store the files which needs to be deleted.
+  - set_fact: FILESTO_DELETE="{{ FILELIST.results }}" 
+ 
+# UC001 - Task to delete the files.
+  - name: UC001.MAIN.DELETE - Task for delete process
+    file:
+      path: "{{ item.1.path }}"
+      state: absent
+    register: FILE_DEL
+    with_subelements:
+      - "{{ FILESTO_DELETE }}"
+      - files  
+    when: FILESTO_DELETE != ''
+
+#UC001 - set fact variables to store deleted files in this play.
+    
+  - set_fact: Delete_List="{{FILE_DEL.results | selectattr('path','defined') |map(attribute='path') | list | to_nice_yaml }}"
+  
+  - set_fact: Delete_List="No Files to Delete"
+    when: Delete_List == []
+
+# UC001 - set fact variables to store the files which are already deleted.
+  - set_fact: FILES_DELETED="{{FILE_DEL.changed}}"
+  
+      
+#UC001 - set fact variables to store if actions performed in this play.  
+
+  - set_fact: ACTION_STATUS="{{ACTION_STATUS}} [Delete Invoked] "  
+    when: FILES_DELETED == true
+
+# UC001 - set fact variables to store if none of the actions performed in this play.  
+  - set_fact: ACTION_STATUS="{{ACTION_STATUS}} [No Files Qualified for deletion] "  
+    when: FILES_DELETED == false
+    
+#UC001 - Include  AR1_UC001_ShellExecutorWithItems to get the file system details after deletion.
+  - include_tasks: AR1_UC001_ShellExecutorWithItems.yml In_Command_Parm={{ FILE_LOCATION.split(',')}}
+  
+# UC001 - set fact variables to store the before and after file system usage. 
+  - set_fact: FS_LIST_POSTDEL={{ Out_Command_Parm.results | map(attribute='_ansible_item_label') | list }}
+  - set_fact: FS_UTIL_POSTDEL={{ Out_Command_Parm.results | map(attribute='stdout') | list  }}
+  
+# UC001 - set fact variables to store the file system name and respective usage %. 
+  - set_fact:
+      test1: "{{ test1 | default([]) | union([{'FSNAME' : item.0 , 'Usage' : item.1  }])}}"
+    with_together:
+      - "{{FS_LIST_POSTDEL}}"
+      - "{{FS_UTIL_POSTDEL}}"  
+ 
+  - include_tasks: AR1_UC001_FSOverThreshold.yml V_FS_LIST={{FS_LIST_POSTDEL}} V_FS_UTIL={{FS_UTIL_POSTDEL}}  UTIL_THRESHOLD={{OPT_FILESYS_UTILIZATION}}
+# UC001 - set fact variables to store file system usage after delete. 
+  - set_fact: POST_FSLIST_GT_MAXTH={{ FS_OUT.results | selectattr('msg','defined') |map(attribute='msg') | list }}
+  
+  - include_tasks: AR1_UC001_ShellExecutorWithItems.yml In_Command_Parm={{ POST_FSLIST_GT_MAXTH }}    
+  
+#UC001 - set fact variables to store the stats in audit table  after delete.
+  - set_fact: SERVER_STATS="{{SERVER_STATS}} after in {{item.0 |to_nice_yaml| replace('\n', '') }} is  {{ item.1 | int|abs }} "
+    with_together:
+      - "{{ POST_FSLIST_GT_MAXTH }}"
+      - "{{ Out_Command_Parm.results[0].stdout }}"
+    when: item.1 < OPT_FILESYS_UTILIZATION
+
+#UC001 - Include  AR4_UC001_FileCompress to get compress the files after deltion.
+  - include_tasks: AR4_UC001_FileCompress.yml
+    when: POST_FSLIST_GT_MAXTH != ''
+  
+

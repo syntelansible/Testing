@@ -1,0 +1,78 @@
+#UC001 - Include  AR0_FetchFileList to get the file system,pattern and threshold limit from input table. 
+     
+ - include_tasks: AR0_FetchFileList.yml AGE={{MIN_AGE_COMPRESS}} V_FSLIST={{FSLIST_GT_MAXTH}} V_PATTERN={{FILE_PATTERN.split(',')}}
+ 
+ - set_fact: FILESTO_COMPRESS="{{ FILELIST.results }}" 
+ 
+# UC001 - Task to compress the qualified files. 
+ - name: UC001.MAIN.DELETE.COMPRESS - Task to compress.   
+   archive:
+     path: "{{ item.1.path }}"
+     format: zip
+     remove: yes
+   register: FILES_COMPRESSED   
+   with_subelements:
+     - "{{ FILESTO_COMPRESS }}"
+     - files
+     
+#UC001 - set fact variables to store compressed files in this play.     
+ - set_fact: Compress_List="{{FILES_COMPRESSED.results | map(attribute='archived') | list | to_nice_yaml}}"
+ 
+ - set_fact: Compress_List="No Files to Compress"
+   when: Compress_List == []
+   
+ - set_fact: FILE_COMP={{FILES_COMPRESSED.changed }}
+      
+#UC001 - set fact variables to store if actions performed in this play.  
+ - set_fact: ACTION_STATUS="{{ACTION_STATUS}} [Compress Invoked] "  
+   when: FILE_COMP == true
+   
+      
+#UC001 - set fact variables to store if none of the actions performed in this play.  
+ - set_fact: ACTION_STATUS="{{ACTION_STATUS}} [No Files Qualified for Compress]"  
+   when: FILE_COMP == false 
+
+#UC001 - Include  AR1_UC001_ShellExecutorWithItems to get the file system details after compress.   
+   
+ - include_tasks: AR1_UC001_ShellExecutorWithItems.yml In_Command_Parm={{ FILE_LOCATION.split(',')}}
+
+# UC001 - set fact variables to store the before and after file system usage. 
+  
+ - set_fact: FS_LIST_POSTCMP={{ Out_Command_Parm.results | map(attribute='_ansible_item_label') | list }}
+ - set_fact: FS_UTIL_POSTCMP={{ Out_Command_Parm.results | map(attribute='stdout') | list  }}   
+ 
+ - debug:
+     msg: "{{ FS_LIST_POSTCMP }} {{ FS_UTIL_POSTCMP }}"
+
+ - include_tasks: AR1_UC001_FSOverThreshold.yml V_FS_LIST={{FS_LIST_POSTCMP}} V_FS_UTIL={{FS_UTIL_POSTCMP}}  UTIL_THRESHOLD={{OPT_FILESYS_UTILIZATION}}
+# UC001 - set fact variables to store file system usage after compress. 
+ - set_fact: POST_FSLIST_GT_MAXTH={{ FS_OUT.results | selectattr('msg','defined') |map(attribute='msg') | list }}
+
+#UC001 - set fact variables to store the stats in audit table after compress. 
+ - include_tasks: AR1_UC001_ShellExecutorWithItems.yml In_Command_Parm={{ POST_FSLIST_GT_MAXTH }}  
+ - set_fact: SERVER_STATS="{{SERVER_STATS}} after in {{item.0 |to_nice_yaml| replace('\n', '') }} is  {{ item.1 | int|abs }} "
+   with_together:
+     - "{{ POST_FSLIST_GT_MAXTH }}"
+     - "{{ Out_Command_Parm.results[0].stdout }}"
+ - include_tasks: AR0_AuditEntry.yml
+
+#UC001 - Include task to update all the actions that performed in audit table. 
+ - include_tasks: AR0_DBConnect.yml V_Query={{MAX_EXEC}}
+ - set_fact: MAX_EXEC_ID="{{Out_DB_Parm.stdout}}"   
+
+# UC001.MAIN.DELETE -  Task to generate the HTML report with success return code.  
+ - include_tasks: AR5_UC001_UserNotification.yml SUB="{{ SUCCESS001 }}", HEAD_COLOR="#008000"
+   when: FS_UTIL_POSTDEL < OPT_FILESYS_UTILIZATION   
+ # UC001.MAIN.DELETE -  Task to generate the HTML report with error codes.    
+ - include_tasks: AR5_UC001_UserNotification.yml SUB="{{ ERR001 }}", HEAD_COLOR="#FF0000"
+   when: FS_UTIL_POSTDEL >= OPT_FILESYS_UTILIZATION 
+
+# UC001.MAIN.DELETE -  Task to generate the HTML report with error codes.              
+ - include_tasks: AR5_UC001_UserNotification.yml SUB="{{ ERRCOMP }}", HEAD_COLOR="#FF0000"    
+   when: FILESTO_COMPRESS == 'true'
+   
+#UC001 - Include AR0_ServerDisconnect to disconnect from the playbook. 
+ - include_tasks: AR0_ServerDisconnect.yml
+   when: FILESTO_COMPRESS == 'true'   
+
+

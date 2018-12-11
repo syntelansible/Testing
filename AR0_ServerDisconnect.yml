@@ -1,0 +1,10 @@
+# UC001 - Play to disconnect the server connectivity from playbook.
+
+  - name: End the server connection from playbook
+    meta: end_play
+    register: server_disconnect
+    failed_when: "'FAILED' in server_disconnect.stderr"     
+   
+    
+
+

@@ -1,0 +1,9 @@
+# UC001 - Query Engine to execute the SQL statements and store the outputs in register variable.
+
+  - name: UC001.MAIN.DBCONNECT - Retrive data for register variable Out_DB_Parm
+    shell: sudo mysql -u "{{DB_USER}}" -p"{{DB_PWD}}" -D "{{DB_NAME}}" -Ns -e "{{ V_Query }}"
+    register:  Out_DB_Parm  
+  
+
+ 
+  

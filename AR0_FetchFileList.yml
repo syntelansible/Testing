@@ -1,0 +1,13 @@
+# UC001 - Task to Identify the files that qualify for delete/compress.
+  
+  - name: Identify the file list for delete/compress.
+    find:
+      paths: "{{item.0}}"
+      patterns: "*{{item.1}}"
+      file_type: "file"
+      age: "{{AGE}}d"
+    register: FILELIST
+    with_nested:
+      - "{{ V_FSLIST }}"
+      - "{{ V_PATTERN }}"
+
